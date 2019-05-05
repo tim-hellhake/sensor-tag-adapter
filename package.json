@@ -1,0 +1,54 @@
+{
+  "name": "sensor-tag-adapter",
+  "display_name": "Sensor Tag",
+  "version": "0.1.0",
+  "description": "Connect your Sensor Tag devices",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tim-hellhake/sensor-tag-adapter.git"
+  },
+  "author": "Tim Hellhake",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/tim-hellhake/sensor-tag-adapter/issues"
+  },
+  "homepage": "https://github.com/tim-hellhake/sensor-tag-adapter#readme",
+  "files": [
+    "LICENSE",
+    "SHA256SUMS",
+    "index.js",
+    "sensor-tag-adapter.js"
+  ],
+  "moziot": {
+    "api": {
+      "min": 2,
+      "max": 2
+    },
+    "plugin": true,
+    "exec": "{nodeLoader} {path}",
+    "schema": {
+      "type": "object",
+      "required": [
+        "pollInterval"
+      ],
+      "properties": {
+        "pollInterval": {
+          "type": "integer",
+          "title": "The number of seconds between two polls"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@abandonware/noble": "^1.9.2-2"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.16.0"
+  }
+}
