@@ -25,7 +25,7 @@ class SensorTag extends Device {
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['TemperatureSensor'];
     this.name = this.id;
-    this.description = 'Sensor Tag';
+    this.description = 'SensorTag';
 
     this.addProperty({
       type: 'number',

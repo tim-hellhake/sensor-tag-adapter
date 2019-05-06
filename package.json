@@ -1,8 +1,8 @@
 {
   "name": "sensor-tag-adapter",
-  "display_name": "Sensor Tag",
-  "version": "0.1.0",
-  "description": "Connect your Sensor Tag devices",
+  "display_name": "SensorTag",
+  "version": "0.1.1",
+  "description": "Connect your SensorTags",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
