@@ -35,6 +35,14 @@ class SensorTag extends Device {
       description: 'The ambient temperature',
       readOnly: true
     });
+
+    this.addProperty({
+      type: 'number',
+      unit: '%',
+      title: 'humidity',
+      description: 'The relative humidity',
+      readOnly: true
+    });
   }
 
   addProperty(description) {
@@ -43,6 +51,7 @@ class SensorTag extends Device {
   }
 
   startPolling(interval) {
+    this.poll();
     this.timer = setInterval(() => {
       this.poll();
     }, interval * 1000);
@@ -65,6 +74,9 @@ class SensorTag extends Device {
     // SHT21 temperature conversion
     const temperature = -46.85 + 175.72 / 65536.0 * data.readUInt16LE(0);
     this.updateValue('temperature', temperature);
+    // SHT21 temperature conversion
+    const humidity = -6.0 + 125.0 / 65536.0 * data.readUInt16LE(2);
+    this.updateValue('humidity', humidity);
   }
 
   updateValue(name, value) {
