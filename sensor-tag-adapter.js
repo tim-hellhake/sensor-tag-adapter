@@ -70,7 +70,8 @@ class SensorTag extends Device {
     console.log(`Humidity sensor enabled`);
     const data = await this.read(dataCharacteristic);
     this.disconnect();
-    console.log(`Read data characteristic`);
+    // eslint-disable-next-line max-len
+    console.log(`Read data characteristic ${JSON.stringify(data.toJSON().data)}`);
     // SHT21 temperature conversion
     const temperature = -46.85 + 175.72 / 65536.0 * data.readUInt16LE(0);
     this.updateValue('temperature', temperature);
@@ -80,6 +81,7 @@ class SensorTag extends Device {
   }
 
   updateValue(name, value) {
+    console.log(`Set ${name} to ${value}`);
     const property = this.properties.get(name);
     property.setCachedValue(value);
     this.notifyPropertyChanged(property);
