@@ -22,7 +22,8 @@
     "LICENSE",
     "SHA256SUMS",
     "index.js",
-    "sensor-tag-adapter.js"
+    "sensor-tag-adapter.js",
+    "manifest.json"
   ],
   "moziot": {
     "api": {

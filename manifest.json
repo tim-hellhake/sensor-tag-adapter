@@ -1,0 +1,33 @@
+{
+  "id": "sensor-tag-adapter",
+  "short_name": "SensorTag",
+  "name": "SensorTag",
+  "version": "0.1.1",
+  "author": "Tim Hellhake",
+  "description": "Connect your SensorTags",
+  "homepage_url": "https://github.com/tim-hellhake/sensor-tag-adapter#readme",
+  "license": "MPL-2.0",
+  "manifest_version": 1,
+  "gateway_specific_settings": {
+    "webthings": {
+      "exec": "{nodeLoader} {path}",
+      "primary_type": "adapter",
+      "strict_max_version": "*",
+      "strict_min_version": "0.10.0"
+    }
+  },
+  "options": {
+    "schema": {
+      "properties": {
+        "pollInterval": {
+          "title": "The number of seconds between two polls",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "pollInterval"
+      ],
+      "type": "object"
+    }
+  }
+}
