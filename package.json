@@ -46,7 +46,7 @@
     }
   },
   "dependencies": {
-    "@abandonware/noble": "^1.9.2-5"
+    "sensortag": "github:tim-hellhake/node-sensortag#switch-to-abandonware-noble"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.3",

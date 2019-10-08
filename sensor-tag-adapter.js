@@ -6,7 +6,7 @@
 
 'use strict';
 
-const noble = require('@abandonware/noble');
+const sensortag = require('sensortag');
 
 const {
   Adapter,
@@ -14,14 +14,10 @@ const {
   Property
 } = require('gateway-addon');
 
-const HUMIDITY_SERVICE = 'f000aa2004514000b000000000000000';
-const HUMIDITY_DATA_CHARACTERISTIC = 'f000aa2104514000b000000000000000';
-const HUMIDITY_CONFIG_CHARACTERISTIC = 'f000aa2204514000b000000000000000';
-
 class SensorTag extends Device {
-  constructor(adapter, peripheral) {
-    super(adapter, `${SensorTag.name}-${peripheral.address}`);
-    this.peripheral = peripheral;
+  constructor(adapter, tag) {
+    super(adapter, `${SensorTag.name}-${tag.id}`);
+    this.tag = tag;
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['TemperatureSensor'];
     this.name = this.id;
@@ -61,23 +57,15 @@ class SensorTag extends Device {
     console.log(`Connecting to ${this.id}`);
     await this.connect();
     console.log(`Connected to ${this.id}`);
-    const [dataService] = await this.discoverServices([HUMIDITY_SERVICE]);
-    console.log(`Discovered services`);
-    // eslint-disable-next-line max-len
-    const [dataCharacteristic, configCharacteristic] = await this.discoverCharacteristics(dataService, [HUMIDITY_DATA_CHARACTERISTIC, HUMIDITY_CONFIG_CHARACTERISTIC]);
-    console.log(`Discovered characteristics`);
-    await this.write(configCharacteristic, Buffer.from([0x01]));
+    await this.enableHumidity();
     console.log(`Humidity sensor enabled`);
-    const data = await this.read(dataCharacteristic);
-    this.disconnect();
-    // eslint-disable-next-line max-len
-    console.log(`Read data characteristic ${JSON.stringify(data.toJSON().data)}`);
-    // SHT21 temperature conversion
-    const temperature = -46.85 + 175.72 / 65536.0 * data.readUInt16LE(0);
+    const [temperature, humidity] = await this.readHumidity();
     this.updateValue('temperature', temperature);
-    // SHT21 temperature conversion
-    const humidity = -6.0 + 125.0 / 65536.0 * data.readUInt16LE(2);
     this.updateValue('humidity', humidity);
+    await this.disableHumidity();
+    console.log(`Humidity sensor disabled`);
+    await this.disconnect();
+    console.log(`Disconnected from ${this.id}`);
   }
 
   updateValue(name, value) {
@@ -89,7 +77,7 @@ class SensorTag extends Device {
 
   async connect() {
     return new Promise((resolve, reject) => {
-      this.peripheral.connect((error) => {
+      this.tag.connectAndSetUp((error) => {
         if (error) {
           reject(error);
         } else {
@@ -99,45 +87,33 @@ class SensorTag extends Device {
     });
   }
 
-  async discoverServices(uuids) {
+  async enableHumidity() {
     return new Promise((resolve, reject) => {
-      this.peripheral.discoverServices(uuids, (error, services) => {
+      this.tag.enableHumidity((error) => {
         if (error) {
           reject(error);
         } else {
-          resolve(services);
+          resolve();
         }
       });
     });
   }
 
-  async discoverCharacteristics(service, uuids) {
+  async readHumidity() {
     return new Promise((resolve, reject) => {
-      service.discoverCharacteristics(uuids, (error, characteristics) => {
+      this.tag.readHumidity((error, temperature, humidity) => {
         if (error) {
           reject(error);
         } else {
-          resolve(characteristics);
+          resolve([temperature, humidity]);
         }
       });
     });
   }
 
-  async read(characteristic) {
+  async disableHumidity() {
     return new Promise((resolve, reject) => {
-      characteristic.read((error, data) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(data);
-        }
-      });
-    });
-  }
-
-  async write(characteristic, value) {
-    return new Promise((resolve, reject) => {
-      characteristic.write(value, false, (error) => {
+      this.tag.disableHumidity((error) => {
         if (error) {
           reject(error);
         } else {
@@ -149,7 +125,7 @@ class SensorTag extends Device {
 
   async disconnect() {
     return new Promise((resolve, reject) => {
-      this.peripheral.disconnect((error) => {
+      this.tag.disconnect((error) => {
         if (error) {
           reject(error);
         } else {
@@ -167,26 +143,15 @@ class SensorTagAdapter extends Adapter {
     addonManager.addAdapter(this);
     const knownDevices = {};
 
-    noble.on('stateChange', (state) => {
-      console.log('Noble adapter is %s', state);
+    sensortag.discoverAll((tag) => {
+      const knownDevice = knownDevices[tag.id];
 
-      if (state === 'poweredOn') {
-        console.log('Start scanning for devices');
-        noble.startScanning([], true);
-      }
-    });
-
-    noble.on('discover', (peripheral) => {
-      if (peripheral.advertisement.localName == 'SensorTag') {
-        const knownDevice = knownDevices[peripheral.address];
-
-        if (!knownDevice) {
-          console.log(`Detected new SensorTag ${peripheral.address}`);
-          const device = new SensorTag(this, peripheral);
-          knownDevices[peripheral.address] = device;
-          this.handleDeviceAdded(device);
-          device.startPolling(pollInterval || 30);
-        }
+      if (!knownDevice) {
+        console.log(`Detected new SensorTag ${tag.id}`);
+        const device = new SensorTag(this, tag);
+        knownDevices[tag.id] = device;
+        this.handleDeviceAdded(device);
+        device.startPolling(pollInterval || 30);
       }
     });
   }
