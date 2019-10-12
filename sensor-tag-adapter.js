@@ -59,6 +59,7 @@ class SensorTag extends Device {
     console.log(`Connected to ${this.id}`);
     await this.enableHumidity();
     console.log(`Humidity sensor enabled`);
+    await this.sleep(1000);
     const [temperature, humidity] = await this.readHumidity();
     this.updateValue('temperature', temperature);
     this.updateValue('humidity', humidity);
@@ -96,6 +97,14 @@ class SensorTag extends Device {
           resolve();
         }
       });
+    });
+  }
+
+  async sleep(ms) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, ms);
     });
   }
 
