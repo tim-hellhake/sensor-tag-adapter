@@ -148,7 +148,9 @@ class SensorTag extends Device {
 class SensorTagAdapter extends Adapter {
   constructor(addonManager, manifest) {
     super(addonManager, SensorTagAdapter.name, manifest.name);
-    const pollInterval = manifest.moziot.config.pollInterval;
+    const {
+      pollInterval
+    } = manifest.moziot.config;
     addonManager.addAdapter(this);
     const knownDevices = {};
 
