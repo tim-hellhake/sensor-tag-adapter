@@ -22,6 +22,10 @@
         "pollInterval": {
           "title": "The number of seconds between two polls",
           "type": "integer"
+        },
+        "debug": {
+          "title": "Enable debug logs",
+          "type": "boolean"
         }
       },
       "required": [

@@ -15,9 +15,10 @@ const {
 } = require('gateway-addon');
 
 class SensorTag extends Device {
-  constructor(adapter, tag) {
+  constructor(adapter, tag, debugLogs) {
     super(adapter, `${SensorTag.name}-${tag.id}`);
     this.tag = tag;
+    this.debugLogs = debugLogs;
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['TemperatureSensor'];
     this.name = this.id;
@@ -41,6 +42,12 @@ class SensorTag extends Device {
     });
   }
 
+  debug(msg) {
+    if (this.debugLogs) {
+      console.log(msg);
+    }
+  }
+
   addProperty(description) {
     const property = new Property(this, description.title, description);
     this.properties.set(description.title, property);
@@ -54,23 +61,23 @@ class SensorTag extends Device {
   }
 
   async poll() {
-    console.log(`Connecting to ${this.id}`);
+    this.debug(`Connecting to ${this.id}`);
     await this.connect();
-    console.log(`Connected to ${this.id}`);
+    this.debug(`Connected to ${this.id}`);
     await this.enableHumidity();
-    console.log(`Humidity sensor enabled`);
+    this.debug(`Humidity sensor enabled`);
     await this.sleep(1000);
     const [temperature, humidity] = await this.readHumidity();
     this.updateValue('temperature', temperature);
     this.updateValue('humidity', humidity);
     await this.disableHumidity();
-    console.log(`Humidity sensor disabled`);
+    this.debug(`Humidity sensor disabled`);
     await this.disconnect();
-    console.log(`Disconnected from ${this.id}`);
+    this.debug(`Disconnected from ${this.id}`);
   }
 
   updateValue(name, value) {
-    console.log(`Set ${name} to ${value}`);
+    this.debug(`Set ${name} to ${value}`);
     const property = this.properties.get(name);
     property.setCachedValue(value);
     this.notifyPropertyChanged(property);
@@ -149,7 +156,8 @@ class SensorTagAdapter extends Adapter {
   constructor(addonManager, manifest) {
     super(addonManager, SensorTagAdapter.name, manifest.name);
     const {
-      pollInterval
+      pollInterval,
+      debug
     } = manifest.moziot.config;
     addonManager.addAdapter(this);
     const knownDevices = {};
@@ -159,7 +167,7 @@ class SensorTagAdapter extends Adapter {
 
       if (!knownDevice) {
         console.log(`Detected new SensorTag ${tag.id}`);
-        const device = new SensorTag(this, tag);
+        const device = new SensorTag(this, tag, debug);
         knownDevices[tag.id] = device;
         this.handleDeviceAdded(device);
         device.startPolling(pollInterval || 30);
