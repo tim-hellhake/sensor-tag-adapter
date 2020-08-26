@@ -35,6 +35,7 @@ class SensorTag extends Device {
 
     this.addProperty({
       type: 'number',
+      '@type': 'HumidityProperty',
       unit: '%',
       title: 'humidity',
       description: 'The relative humidity',
