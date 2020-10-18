@@ -6,19 +6,13 @@
 
 'use strict';
 
-const sensortag = require('sensortag');
+import sensortag, { Tag } from 'sensortag';
 
-const {
-  Adapter,
-  Device,
-  Property
-} = require('gateway-addon');
+import { Adapter, Device, Property } from 'gateway-addon';
 
 class SensorTag extends Device {
-  constructor(adapter, tag, debugLogs) {
+  constructor(adapter: Adapter, private tag: Tag, private debugLogs: boolean) {
     super(adapter, `${SensorTag.name}-${tag.id}`);
-    this.tag = tag;
-    this.debugLogs = debugLogs;
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['TemperatureSensor'];
     this.name = this.id;
@@ -43,20 +37,21 @@ class SensorTag extends Device {
     });
   }
 
-  debug(msg) {
+  debug(msg: string) {
     if (this.debugLogs) {
       console.log(msg);
     }
   }
 
-  addProperty(description) {
+  addProperty(description: any) {
     const property = new Property(this, description.title, description);
     this.properties.set(description.title, property);
   }
 
-  startPolling(interval) {
+  startPolling(interval: number) {
     this.poll();
-    this.timer = setInterval(() => {
+
+    setInterval(() => {
       this.poll();
     }, interval * 1000);
   }
@@ -77,16 +72,18 @@ class SensorTag extends Device {
     this.debug(`Disconnected from ${this.id}`);
   }
 
-  updateValue(name, value) {
+  updateValue(name: string, value: any) {
     this.debug(`Set ${name} to ${value}`);
     const property = this.properties.get(name);
-    property.setCachedValue(value);
-    this.notifyPropertyChanged(property);
+    if (property) {
+      property.setCachedValue(value);
+      this.notifyPropertyChanged(property);
+    }
   }
 
   async connect() {
     return new Promise((resolve, reject) => {
-      this.tag.connectAndSetUp((error) => {
+      this.tag.connectAndSetUp((error: any) => {
         if (error) {
           reject(error);
         } else {
@@ -98,7 +95,7 @@ class SensorTag extends Device {
 
   async enableHumidity() {
     return new Promise((resolve, reject) => {
-      this.tag.enableHumidity((error) => {
+      this.tag.enableHumidity((error: any) => {
         if (error) {
           reject(error);
         } else {
@@ -108,7 +105,7 @@ class SensorTag extends Device {
     });
   }
 
-  async sleep(ms) {
+  async sleep(ms: number) {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve();
@@ -116,9 +113,9 @@ class SensorTag extends Device {
     });
   }
 
-  async readHumidity() {
+  async readHumidity(): Promise<number[]> {
     return new Promise((resolve, reject) => {
-      this.tag.readHumidity((error, temperature, humidity) => {
+      this.tag.readHumidity((error: any, temperature: number, humidity: number) => {
         if (error) {
           reject(error);
         } else {
@@ -130,7 +127,7 @@ class SensorTag extends Device {
 
   async disableHumidity() {
     return new Promise((resolve, reject) => {
-      this.tag.disableHumidity((error) => {
+      this.tag.disableHumidity((error: any) => {
         if (error) {
           reject(error);
         } else {
@@ -142,7 +139,7 @@ class SensorTag extends Device {
 
   async disconnect() {
     return new Promise((resolve, reject) => {
-      this.tag.disconnect((error) => {
+      this.tag.disconnect((error: any) => {
         if (error) {
           reject(error);
         } else {
@@ -153,15 +150,18 @@ class SensorTag extends Device {
   }
 }
 
-class SensorTagAdapter extends Adapter {
-  constructor(addonManager, manifest) {
+export class SensorTagAdapter extends Adapter {
+  constructor(addonManager: any, manifest: any) {
     super(addonManager, SensorTagAdapter.name, manifest.name);
+
     const {
       pollInterval,
       debug
     } = manifest.moziot.config;
+
     addonManager.addAdapter(this);
-    const knownDevices = {};
+
+    const knownDevices: { [key: string]: SensorTag } = {};
 
     sensortag.discoverAll((tag) => {
       const knownDevice = knownDevices[tag.id];
@@ -176,5 +176,3 @@ class SensorTagAdapter extends Adapter {
     });
   }
 }
-
-module.exports = SensorTagAdapter;

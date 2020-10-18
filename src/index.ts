@@ -6,7 +6,6 @@
 
 'use strict';
 
-const SensorTagAdapter = require('./sensor-tag-adapter');
+import { SensorTagAdapter } from './sensor-tag-adapter';
 
-module.exports =
-    (addonManager, manifest) => new SensorTagAdapter(addonManager, manifest);
+export = (addonManager: any, manifest: any) => new SensorTagAdapter(addonManager, manifest);

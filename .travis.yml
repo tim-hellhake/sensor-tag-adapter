@@ -3,7 +3,8 @@ node_js:
 - lts/carbon
 
 script:
-  - npm run lint
+  - npm run ci
+  - npm run build
 
 before_deploy:
   - node -e "if(require('./package.json').version !== '$TRAVIS_TAG') { console.error('Git tag does not match package version'); process.exit(1); }"
