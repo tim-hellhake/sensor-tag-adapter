@@ -5,6 +5,8 @@ export NVM_DIR="${HOME}/.nvm"
 [ -s "${NVM_DIR}/nvm.sh" ] && source "${NVM_DIR}/nvm.sh"
 [ $(id -u) = 0 ] && umask 0
 
+npm ci
+npm run build
 rm -rf node_modules
 
 if [ -z "${ADDON_ARCH}" ]; then
@@ -16,7 +18,7 @@ fi
 
 npm install --production
 
-shasum --algorithm 256 manifest.json package.json *.js LICENSE README.md > SHA256SUMS
+shasum --algorithm 256 manifest.json package.json lib/*.js LICENSE README.md > SHA256SUMS
 
 find node_modules \( -type f -o -type l \) -exec shasum --algorithm 256 {} \; >> SHA256SUMS
 
