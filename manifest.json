@@ -2,7 +2,7 @@
   "id": "sensor-tag-adapter",
   "short_name": "SensorTag",
   "name": "SensorTag",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": "Tim Hellhake",
   "description": "Connect your SensorTags",
   "homepage_url": "https://github.com/tim-hellhake/sensor-tag-adapter#readme",
